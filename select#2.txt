@@ -1,0 +1,61 @@
+SELECT g.name_genre, COUNT(m."name") FROM genre g
+LEFT JOIN musician_genre mg ON g.id = mg.genre_id 
+LEFT JOIN musician m ON mg.musician_id = m.id 
+GROUP BY g.name_genre 
+ORDER BY COUNT(m.id) DESC;
+
+SELECT t.name_track, a.year_of_issue FROM album a 
+LEFT JOIN track t ON a.id = t.album_id 
+WHERE (a.year_of_issue = 2019) OR (a.year_of_issue = 2020);
+
+SELECT a.name_album, AVG(t.duration) FROM album a 
+LEFT JOIN track t ON a.id = t.album_id 
+GROUP BY a.name_album 
+ORDER BY AVG(t.duration);
+
+SELECT m."name" FROM musician m 
+FULL JOIN musician_album ma ON m.id = ma.musician_id 
+FULL JOIN album a ON ma.album_id = a.id 
+WHERE a.year_of_issue - 2020 != 0;
+
+SELECT c.name_collection FROM collection c 
+LEFT JOIN collection_track ct ON c.id = ct.collection_id 
+LEFT JOIN track t ON ct.track_id = t.id 
+LEFT JOIN album a ON t.album_id = a.id
+LEFT JOIN musician_album ma ON a.id = ma.album_id 
+LEFT JOIN musician m ON ma.musician_id = m.id 
+WHERE m."name" LIKE '%Ñïëèí%';
+
+SELECT a.name_album FROM album a 
+LEFT JOIN musician_album ma ON a.id = ma.album_id 
+LEFT JOIN musician m ON ma.musician_id = m.id 
+LEFT JOIN musician_genre mg ON m.id = mg.musician_id 
+LEFT JOIN genre g ON mg.genre_id = g.id 
+GROUP BY a.name_album 
+HAVING COUNT(g.name_genre) > 1
+ORDER BY a.name_album; 
+
+SELECT t.name_track FROM track t 
+FULL JOIN collection_track ct ON t.id = ct.track_id 
+WHERE ct.track_id IS NULL;
+
+SELECT m."name", t.duration FROM track t 
+LEFT JOIN album a ON t.album_id = a.id 
+LEFT JOIN musician_album ma ON a.id = ma.album_id 
+LEFT JOIN musician m ON ma.musician_id = m.id 
+GROUP BY m."name", t.duration 
+HAVING t.duration = (SELECT MIN(duration) FROM track)
+ORDER BY m."name";
+
+SELECT DISTINCT a.name_album FROM album a 
+LEFT JOIN track t ON a.id = t.album_id 
+WHERE t.album_id IN (
+	SELECT album_id FROM track
+	GROUP BY album_id
+	HAVING COUNT(id) = (
+		SELECT COUNT(id) FROM track
+		GROUP BY album_id
+		ORDER  BY count
+		LIMIT 1
+	)
+);
